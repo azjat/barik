@@ -3,7 +3,6 @@ import SwiftUI
 /// Widget for the menu, displaying Wi‑Fi and Ethernet icons.
 struct NetworkWidget: View {
     @StateObject private var viewModel = NetworkStatusViewModel()
-    @State private var rect: CGRect = .zero
 
     var body: some View {
         HStack(spacing: 15) {
@@ -14,22 +13,15 @@ struct NetworkWidget: View {
                 ethernetIcon
             }
         }
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .onAppear { rect = geometry.frame(in: .global) }
-                    .onChange(of: geometry.frame(in: .global)) { _, newValue in
-                        rect = newValue
-                    }
-            }
-        )
         .contentShape(Rectangle())
         .font(.system(size: 15))
         .experimentalConfiguration(cornerRadius: 15)
         .frame(maxHeight: .infinity)
         .background(.black.opacity(0.001))
         .onTapGesture {
-            MenuBarPopup.show(rect: rect, id: "network") { NetworkPopup(viewModel: self.viewModel) }
+            if let url = URL(string: "x-apple.systempreferences:com.apple.Wi-Fi-Settings.extension") {
+                NSWorkspace.shared.open(url)
+            }
         }
     }
 

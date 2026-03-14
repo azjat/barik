@@ -10,16 +10,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         
-        // Show "What's New" banner if the app version is outdated
-        if !VersionChecker.isLatestVersion() {
-            VersionChecker.updateVersionFile()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                NotificationCenter.default.post(
-                    name: Notification.Name("ShowWhatsNewBanner"), object: nil)
-            }
-        }
-        
-        MenuBarPopup.setup()
         setupPanels()
 
         NotificationCenter.default.addObserver(
@@ -33,9 +23,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupPanels()
     }
 
-    /// Configures and displays the background and menu bar panels.
+    /// Configures and displays the background and menu bar panels on the built-in display.
     private func setupPanels() {
-        guard let screenFrame = NSScreen.main?.frame else { return }
+        guard let screen = NSScreen.builtInRetina else { return }
+        let screenFrame = screen.frame
         setupPanel(
             &backgroundPanel,
             frame: screenFrame,
@@ -81,5 +72,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         alert.runModal()
         NSApplication.shared.terminate(nil)
+    }
+}
+
+extension NSScreen {
+    /// Returns true if this screen is the built-in display.
+    var isBuiltIn: Bool {
+        guard let screenNumber = deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else {
+            return false
+        }
+        return CGDisplayIsBuiltin(screenNumber) != 0
+    }
+
+    /// The built-in retina display, if available.
+    static var builtInRetina: NSScreen? {
+        screens.first { $0.isBuiltIn && $0.backingScaleFactor >= 2.0 }
     }
 }

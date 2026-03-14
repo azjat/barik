@@ -12,8 +12,6 @@ struct BatteryWidget: View {
     private var isCharging: Bool { batteryManager.isCharging }
     private var isPluggedIn: Bool { batteryManager.isPluggedIn }
 
-    @State private var rect: CGRect = CGRect()
-
     var body: some View {
         ZStack {
             ZStack(alignment: .leading) {
@@ -39,24 +37,14 @@ struct BatteryWidget: View {
                 .foregroundStyle(batteryTextColor)
             }
             .frame(width: 30, height: 10)
-            .background(
-                GeometryReader { geometry in
-                    Color.clear
-                        .onAppear {
-                            rect = geometry.frame(in: .global)
-                        }
-                        .onChange(of: geometry.frame(in: .global)) {
-                            oldState, newState in
-                            rect = newState
-                        }
-                }
-            )
         }
         .experimentalConfiguration(cornerRadius: 15)
         .frame(maxHeight: .infinity)
         .background(.black.opacity(0.001))
         .onTapGesture {
-            MenuBarPopup.show(rect: rect, id: "battery") { BatteryPopup(batteryManager: self.batteryManager) }
+            if let url = URL(string: "x-apple.systempreferences:com.apple.Battery-Settings.extension") {
+                NSWorkspace.shared.open(url)
+            }
         }
 
     }
