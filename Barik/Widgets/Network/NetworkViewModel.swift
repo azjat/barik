@@ -141,9 +141,10 @@ final class NetworkStatusViewModel: NSObject, ObservableObject,
     private func updateWiFiInfo() {
         let client = CWWiFiClient.shared()
         if let interface = client.interface() {
-            self.ssid = interface.ssid() ?? "Not connected"
-            self.rssi = interface.rssiValue()
-            self.noise = interface.noiseMeasurement()
+            let newSsid = interface.ssid() ?? "Not connected"
+            let newRssi = interface.rssiValue()
+            let newNoise = interface.noiseMeasurement()
+            var newChannel = "N/A"
             if let wlanChannel = interface.wlanChannel() {
                 let band: String
                 switch wlanChannel.channelBand {
@@ -158,16 +159,17 @@ final class NetworkStatusViewModel: NSObject, ObservableObject,
                 @unknown default:
                     band = "unknown"
                 }
-                self.channel = "\(wlanChannel.channelNumber) (\(band))"
-            } else {
-                self.channel = "N/A"
+                newChannel = "\(wlanChannel.channelNumber) (\(band))"
             }
+            if self.ssid != newSsid { self.ssid = newSsid }
+            if self.rssi != newRssi { self.rssi = newRssi }
+            if self.noise != newNoise { self.noise = newNoise }
+            if self.channel != newChannel { self.channel = newChannel }
         } else {
-            // Interface not available – Wi‑Fi is off.
-            self.ssid = "No interface"
-            self.rssi = 0
-            self.noise = 0
-            self.channel = "N/A"
+            if self.ssid != "No interface" { self.ssid = "No interface" }
+            if self.rssi != 0 { self.rssi = 0 }
+            if self.noise != 0 { self.noise = 0 }
+            if self.channel != "N/A" { self.channel = "N/A" }
         }
     }
 
