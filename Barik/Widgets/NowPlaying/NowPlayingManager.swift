@@ -197,19 +197,24 @@ final class NowPlayingManager: ObservableObject {
     private var cancellable: AnyCancellable?
 
     private init() {
-        cancellable = Timer.publish(every: 0.3, on: .main, in: .common)
+        cancellable = Timer.publish(every: 3.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.updateNowPlaying()
             }
     }
 
+    deinit {
+        cancellable?.cancel()
+    }
+
     /// Updates the now playing song asynchronously.
     private func updateNowPlaying() {
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .utility).async { [weak self] in
             let song = NowPlayingProvider.fetchNowPlaying()
-            DispatchQueue.main.async { [weak self] in
-                self?.nowPlaying = song
+            DispatchQueue.main.async {
+                guard let self = self, self.nowPlaying != song else { return }
+                self.nowPlaying = song
             }
         }
     }

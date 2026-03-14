@@ -66,6 +66,7 @@ final class NetworkStatusViewModel: NSObject, ObservableObject,
     deinit {
         stopNetworkMonitoring()
         stopWiFiMonitoring()
+        locationManager.delegate = nil
     }
 
     // MARK: — NWPathMonitor for overall network status.
@@ -125,7 +126,7 @@ final class NetworkStatusViewModel: NSObject, ObservableObject,
     // MARK: — Updating Wi‑Fi information via CoreWLAN.
 
     private func startWiFiMonitoring() {
-        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) {
+        timer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) {
             [weak self] _ in
             self?.updateWiFiInfo()
         }

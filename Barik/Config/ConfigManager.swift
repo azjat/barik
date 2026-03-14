@@ -16,6 +16,14 @@ final class ConfigManager: ObservableObject {
         loadOrCreateConfigIfNeeded()
     }
 
+    deinit {
+        fileWatchSource?.cancel()
+        if fileDescriptor != -1 {
+            close(fileDescriptor)
+            fileDescriptor = -1
+        }
+    }
+
     private func loadOrCreateConfigIfNeeded() {
         let homePath = FileManager.default.homeDirectoryForCurrentUser.path
         let path1 = "\(homePath)/.barik-config.toml"
@@ -60,11 +68,10 @@ final class ConfigManager: ObservableObject {
 
     private func createDefaultConfig(at path: String) throws {
         let defaultTOML = """
-            # If you installed yabai or aerospace without using Homebrew,
+            # If you installed aerospace without using Homebrew,
             # manually set the path to the binary. For example:
             #
-            # yabai.path = "/run/current-system/sw/bin/yabai"
-            # aerospace.path = ...
+            # aerospace.path = "/run/current-system/sw/bin/aerospace"
             
             theme = "system" # system, light, dark
 
