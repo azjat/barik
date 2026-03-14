@@ -29,7 +29,7 @@ struct NetworkWidget: View {
         .frame(maxHeight: .infinity)
         .background(.black.opacity(0.001))
         .onTapGesture {
-            MenuBarPopup.show(rect: rect, id: "network") { NetworkPopup() }
+            MenuBarPopup.show(rect: rect, id: "network") { NetworkPopup(viewModel: self.viewModel) }
         }
     }
 

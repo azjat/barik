@@ -18,8 +18,8 @@ class BatteryManager: ObservableObject {
     }
 
     private func startMonitoring() {
-        // Update every 1 second.
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) {
+        // Battery status changes infrequently; update every 30 seconds.
+        timer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) {
             [weak self] _ in
             self?.updateBatteryStatus()
         }
@@ -53,11 +53,18 @@ class BatteryManager: ObservableObject {
                     kIOPSPowerSourceStateKey as String] as? String
             {
                 let isAC = (powerSourceState == kIOPSACPowerValue)
+                let newLevel = (currentCapacity * 100) / maxCapacity
 
                 DispatchQueue.main.async {
-                    self.batteryLevel = (currentCapacity * 100) / maxCapacity
-                    self.isCharging = charging
-                    self.isPluggedIn = isAC
+                    if self.batteryLevel != newLevel {
+                        self.batteryLevel = newLevel
+                    }
+                    if self.isCharging != charging {
+                        self.isCharging = charging
+                    }
+                    if self.isPluggedIn != isAC {
+                        self.isPluggedIn = isAC
+                    }
                 }
             }
         }
