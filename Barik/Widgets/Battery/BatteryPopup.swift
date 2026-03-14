@@ -2,7 +2,7 @@ import EventKit
 import SwiftUI
 
 struct BatteryPopup: View {
-    @StateObject private var batteryManager = BatteryManager()
+    @ObservedObject var batteryManager: BatteryManager
 
     var body: some View {
         ZStack {
@@ -55,7 +55,7 @@ struct BatteryPopup: View {
 
 struct BatteryPopup_Previews: PreviewProvider {
     static var previews: some View {
-        BatteryPopup()
+        BatteryPopup(batteryManager: BatteryManager())
             .background(Color.black)
             .previewLayout(.sizeThatFits)
     }

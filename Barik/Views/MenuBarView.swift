@@ -54,10 +54,6 @@ struct MenuBarView: View {
         case "default.time":
             TimeWidget(calendarManager: CalendarManager(configProvider: config))
                 .environmentObject(config)
-            
-        case "default.nowplaying":
-            NowPlayingWidget()
-                .environmentObject(config)
 
         case "spacer":
             Spacer().frame(minWidth: 50, maxWidth: .infinity)
