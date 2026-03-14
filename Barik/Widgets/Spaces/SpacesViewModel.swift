@@ -24,7 +24,7 @@ class SpacesViewModel: ObservableObject {
     }
 
     private func startMonitoring() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) {
+        timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) {
             [weak self] _ in
             self?.loadSpaces()
         }
