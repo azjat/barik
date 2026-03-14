@@ -68,10 +68,12 @@ class CalendarManager: ObservableObject {
     private func filterEvents(_ events: [EKEvent]) -> [EKEvent] {
         var filtered = events
         if !allowList.isEmpty {
-            filtered = filtered.filter { allowList.contains($0.calendar.title) }
+            let allowSet = Set(allowList)
+            filtered = filtered.filter { allowSet.contains($0.calendar.title) }
         }
         if !denyList.isEmpty {
-            filtered = filtered.filter { !denyList.contains($0.calendar.title) }
+            let denySet = Set(denyList)
+            filtered = filtered.filter { !denySet.contains($0.calendar.title) }
         }
         return filtered
     }

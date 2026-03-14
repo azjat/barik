@@ -6,6 +6,7 @@ class SpacesViewModel: ObservableObject {
     @Published var spaces: [AnySpace] = []
     private var timer: Timer?
     private var provider: AnySpacesProvider?
+    private var isLoading = false
 
     init() {
         let runningApps = NSWorkspace.shared.runningApplications.compactMap {
@@ -24,7 +25,7 @@ class SpacesViewModel: ObservableObject {
     }
 
     private func startMonitoring() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) {
+        timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) {
             [weak self] _ in
             self?.loadSpaces()
         }
@@ -37,20 +38,26 @@ class SpacesViewModel: ObservableObject {
     }
 
     private func loadSpaces() {
-        DispatchQueue.global(qos: .background).async { [weak self] in
+        guard !isLoading else { return }
+        isLoading = true
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self,
                 let provider = self.provider,
                 let spaces = provider.getSpacesWithWindows()
             else {
                 DispatchQueue.main.async { [weak self] in
-                    guard let self = self, !self.spaces.isEmpty else { return }
+                    guard let self = self else { return }
+                    self.isLoading = false
+                    guard !self.spaces.isEmpty else { return }
                     self.spaces = []
                 }
                 return
             }
             let sortedSpaces = spaces.sorted { $0.id < $1.id }
             DispatchQueue.main.async { [weak self] in
-                guard let self = self, self.spaces != sortedSpaces else { return }
+                guard let self = self else { return }
+                self.isLoading = false
+                guard self.spaces != sortedSpaces else { return }
                 self.spaces = sortedSpaces
             }
         }
@@ -73,21 +80,42 @@ class SpacesViewModel: ObservableObject {
 class IconCache {
     static let shared = IconCache()
     private let cache = NSCache<NSString, NSImage>()
+    private var bundleURLCache: [String: URL] = [:]
+    private var lastBundleURLRefresh: Date = .distantPast
+
     private init() {}
+
     func icon(for appName: String) -> NSImage? {
         if let cached = cache.object(forKey: appName as NSString) {
             return cached
         }
         let workspace = NSWorkspace.shared
-        if let app = workspace.runningApplications.first(where: {
-            $0.localizedName == appName
-        }),
-            let bundleURL = app.bundleURL
-        {
+        if let bundleURL = resolvedBundleURL(for: appName) {
             let icon = workspace.icon(forFile: bundleURL.path)
             cache.setObject(icon, forKey: appName as NSString)
             return icon
         }
         return nil
+    }
+
+    private func resolvedBundleURL(for appName: String) -> URL? {
+        if let url = bundleURLCache[appName] {
+            return url
+        }
+        refreshBundleURLCacheIfNeeded()
+        return bundleURLCache[appName]
+    }
+
+    private func refreshBundleURLCacheIfNeeded() {
+        let now = Date()
+        guard now.timeIntervalSince(lastBundleURLRefresh) > 2.0 else { return }
+        lastBundleURLRefresh = now
+        var newCache: [String: URL] = [:]
+        for app in NSWorkspace.shared.runningApplications {
+            if let name = app.localizedName, let url = app.bundleURL {
+                newCache[name] = url
+            }
+        }
+        bundleURLCache = newCache
     }
 }

@@ -3,12 +3,14 @@ import Foundation
 class AerospaceSpacesProvider: SpacesProvider, SwitchableSpacesProvider {
     typealias SpaceType = AeroSpace
     let executablePath = ConfigManager.shared.config.aerospace.path
+    private let decoder = JSONDecoder()
 
     func getSpacesWithWindows() -> [AeroSpace]? {
         guard var spaces = fetchSpaces(), let windows = fetchWindows() else {
             return nil
         }
-        if let focusedSpace = fetchFocusedSpace() {
+        let focusedSpace = fetchFocusedSpace()
+        if let focusedSpace = focusedSpace {
             for i in 0..<spaces.count {
                 spaces[i].isFocused = (spaces[i].id == focusedSpace.id)
             }
@@ -26,7 +28,7 @@ class AerospaceSpacesProvider: SpacesProvider, SwitchableSpacesProvider {
                     space.windows.append(mutableWindow)
                     spaceDict[ws] = space
                 }
-            } else if let focusedSpace = fetchFocusedSpace() {
+            } else if let focusedSpace = focusedSpace {
                 if var space = spaceDict[focusedSpace.id] {
                     space.windows.append(mutableWindow)
                     spaceDict[focusedSpace.id] = space
@@ -73,7 +75,6 @@ class AerospaceSpacesProvider: SpacesProvider, SwitchableSpacesProvider {
         else {
             return nil
         }
-        let decoder = JSONDecoder()
         do {
             return try decoder.decode([AeroSpace].self, from: data)
         } catch {
@@ -91,7 +92,6 @@ class AerospaceSpacesProvider: SpacesProvider, SwitchableSpacesProvider {
         else {
             return nil
         }
-        let decoder = JSONDecoder()
         do {
             return try decoder.decode([AeroWindow].self, from: data)
         } catch {
@@ -108,7 +108,6 @@ class AerospaceSpacesProvider: SpacesProvider, SwitchableSpacesProvider {
         else {
             return nil
         }
-        let decoder = JSONDecoder()
         do {
             return try decoder.decode([AeroSpace].self, from: data).first
         } catch {
@@ -125,7 +124,6 @@ class AerospaceSpacesProvider: SpacesProvider, SwitchableSpacesProvider {
         else {
             return nil
         }
-        let decoder = JSONDecoder()
         do {
             return try decoder.decode([AeroWindow].self, from: data).first
         } catch {

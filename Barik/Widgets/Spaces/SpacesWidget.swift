@@ -146,8 +146,9 @@ private struct WindowView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             viewModel.switchToSpace(space)
-            usleep(100_000)
-            viewModel.switchToWindow(window)
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.1) {
+                self.viewModel.switchToWindow(window)
+            }
         }
         .onHover { value in
             isHovered = value
